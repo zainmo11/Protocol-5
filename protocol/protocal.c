@@ -87,3 +87,25 @@ void disable_network_layer(void){
 };
 
 
+void displayEvent(event_type event) {
+    switch (event) {
+        case frame_arrival:
+            printf("Event: Frame Arrival\n");
+            break;
+        case cksum_err:
+            printf("Event: Checksum Error\n");
+            break;
+        case time_out:
+            printf("Event: Timeout\n");
+            break;
+        case network_layer_ready:
+            printf("Event: Network Layer Ready\n");
+            break;
+        case ready:
+            printf("Event: Ready\n");
+            break;
+        default:
+            printf("Unknown Event\n");
+    }
+}
+

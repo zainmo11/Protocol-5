@@ -5,10 +5,16 @@
 #include "../protocol/protocal.h"
 #define MAX_SEQ 7
 
+void Serialize_to_packet(const char *sentence, packet words[MAX_PKT]);
 
+void Serialize_to_frame(packet words[MAX_PKT], frame frames[MAX_PKT]);
+
+void display_frames(const frame frames[MAX_PKT]);
 
 static bool between(seq_nr a, seq_nr b, seq_nr c);
 
 static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[]);
 
-void protocol5(void);
+void protocol5(const char *sentence);
+
+event_type getRandomEvent();

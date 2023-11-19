@@ -41,3 +41,5 @@ void enable_network_layer(void);
 void disable_network_layer(void);
 
 void is_received(bool status);
+
+void displayEvent(event_type event);
