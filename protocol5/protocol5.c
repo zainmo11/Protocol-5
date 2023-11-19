@@ -44,7 +44,7 @@ void Serialize_to_frame(packet words[MAX_PKT], frame frames[MAX_PKT]) {
     frames[i].kind = data;
     frames[i].seq = i;
     frames[i].ack = 0;
-    frames[i].info.data[0] = '\0';
+    strcpy(frames[i].info.data,'\0');
 }
 
 void display_frames(const frame frames[MAX_PKT]) {
@@ -113,13 +113,13 @@ void protocol5(const char *sentence)
     seq_nr ack_expected = 0; /* oldest frame as yet unacknowledged */
     seq_nr frame_expected = 0; /* next frame expected on inbound stream */
     frame r; /* scratch variable */
-    packet buffer[MAX_SEQ + 1]; /* buffers for the outbound stream */
     seq_nr nbuffered =0; /* number of output buffers currently in use */
     seq_nr i; /* used to index into the buffer array */
     event_type event;
     enable_network_layer(); /* allow network layer ready events */
-    //sender = true and receiver = false
-    boolean sender_Or_receiver = true;
+    boolean sender_Or_receiver = true; /* Set sender = true , receiver = false */
+
+
     while (true) {
         wait_for_event(&event);/* four possibilities: see event type above */
         displayEvent(event);

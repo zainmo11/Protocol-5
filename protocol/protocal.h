@@ -5,7 +5,7 @@
 #define MAX_PKT 1024 /* determines packet size in bytes */
 typedef enum {False, True} boolean; /* boolean type */
 typedef unsigned int seq_nr; /* sequence or ack numbers */
-typedef struct {unsigned char data[MAX_PKT]; } packet; /* packet definition */
+typedef struct {char data[MAX_PKT]; } packet; /* packet definition */
 typedef enum {data, ack, nak} frame_kind; /* frame kind definition */
 typedef struct { /* frames are transported in this layer */
     frame_kind kind; /* what kind of frame is it? */
