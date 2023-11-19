@@ -20,13 +20,13 @@ typedef enum {frame_arrival , cksum_err , time_out , network_layer_ready , ready
 /* Wait for an event to happen; return its type in event. */
 void wait_for_event(event_type *event);
 /* Fetch a packet from the network layer for transmission on the channel. */
-void from_network_layer(packet *p);
+void from_network_layer(packet p);
 /* Deliver information from an inbound frame to the network layer. */
-void to_network_layer(packet *p);
+void to_network_layer(packet p);
 /* Go get an inbound frame from the physical layer and copy it to r. */
-void from_physical_layer(frame *r);
+void from_physical_layer(frame r);
 /* Pass the frame to the physical layer for transmission. */
-void to_physical_layer(frame *s);
+void to_physical_layer(frame s);
 /* Start the clock running and enable the timeout event. */
 void start_timer(seq_nr k);
 /* Stop the clock and disable the timeout event. */

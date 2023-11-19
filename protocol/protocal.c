@@ -22,26 +22,26 @@ void is_received(bool status){
     sleep(1);
 }
 
-void from_network_layer(packet *p){
-    printf("Take Packet %s from network layer to physical layer\n",p->data);
+void from_network_layer(packet p){
+    printf("Take Packet %s from network layer to physical layer\n",p);
     sleep(1);
 };
 
 
-void to_network_layer(packet *p){
-    printf("Take Packet %s from physical layer to network layer]\n",p->data);
+void to_network_layer(packet p){
+    printf("Take Packet %s from physical layer to network layer]\n",p);
     sleep(1);
 };
 
 
-void from_physical_layer(frame *r){
-    printf("Take frame %r to network layer",r->info);
+void from_physical_layer(frame r){
+    printf("Take frame %r to network layer",r.info);
     sleep(1);
 };
 
 
-void to_physical_layer(frame *s){
-    printf("Take frame %r to network layer",s->info);
+void to_physical_layer(frame s){
+    printf("Take frame %r to network layer",s.info);
     sleep(1);
 };
 
