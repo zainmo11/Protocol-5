@@ -1,9 +1,10 @@
 //
 // Created by zyn66 on 11/19/2023.
 //
-
+#include "stdbool.h"
+#include "../protocol/protocal.h"
 #define MAX_SEQ 7
-typedef enum {frame_arrival , cksum_err , time_out , network_layer_ready , ready} event_type;
+
 
 
 static bool between(seq_nr a, seq_nr b, seq_nr c);

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdbool.h>
-void wait_for_event(int *event){
+void wait_for_event(event_type *event){
     printf("Waiting for event");
 
     // Loop to print dots every second for a total of 3 seconds
