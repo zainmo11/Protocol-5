@@ -4,7 +4,7 @@
 #include "protocal.h"
 #include <stdio.h>
 #include <unistd.h>
-
+#include <stdbool.h>
 void wait_for_event(int *event){
     printf("Waiting for event");
 
@@ -60,14 +60,14 @@ void stop_timer(seq_nr k){
 
 
 void start_ack_timer(void){
-    printf("Start Acknowledge Time for sequence number %i ",k);
+    printf("Start Acknowledge Time for sequence number");
     timer = True;
     sleep(1);
 };
 
 
 void stop_ack_timer(void){
-    printf("End Acknowledge Time for sequence number %i ",k);
+    printf("End Acknowledge Time for sequence number");
     timer = True;
     sleep(1);
 };

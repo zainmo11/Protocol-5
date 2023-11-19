@@ -1,7 +1,7 @@
 //
 // Created by zyn66 on 11/18/2023.
 //
-
+#include <stdbool.h>
 #define MAX_PKT 1024 /* determines packet size in bytes */
 typedef enum {False, True} boolean; /* boolean type */
 typedef unsigned int seq_nr; /* sequence or ack numbers */
