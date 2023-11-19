@@ -8,7 +8,9 @@ This implementation demonstrates Protocol 5, also known as Go-Back-N, for reliab
 
 - **protocol5.h:** Header file containing declarations for Protocol 5 functions and structures.
 - **protocol5.c:** Implementation file containing the Protocol 5 logic.
-
+- **protocol.h:** Header file containing declarations for base Protocol functions and structures.
+- **protocol.c:** Implementation file containing the base Protocol logic.
+  
 ## Protocol Description
 
 ### Overview
