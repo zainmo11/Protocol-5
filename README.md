@@ -25,11 +25,11 @@ Protocol 5 uses a sliding window approach to manage the transmission of frames. 
 
 ### 1-Compilation
 ```bash
-gcc -o protocol5 protocol5.c protocol/protocol.c -lm
+gcc main.c -o program.exe
 ```
 ### 2-Execution
 ```bash
-./protocol5
+program.exe
 ```
 ## Customization
 -You can customize the protocol behavior and constants by modifying the relevant sections in the code, such as adjusting MAX_SEQ or updating the packet structure definition
