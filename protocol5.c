@@ -63,15 +63,6 @@ void display_packets(const packet words[MAX_PKT]) {
 }
 
 
-static bool between(seq_nr a, seq_nr b, seq_nr c)
-{
-/* Return true if a <= b < c circularly; false otherwise. */
-    if (((a <= b) && (b < c)) || ((c < a) && (a <= b)) || ((b < c) && (c < a)))
-        return(true);
-    else
-        return(false);
-}
-
 
 static void Receive_data(frame s, frame frames[], seq_nr frame_nr, event_type *e)
 {
@@ -103,9 +94,7 @@ boolean is_frame_expected(frame receiver[],seq_nr frame_expected) {
     }
     return false;
 }
-event_type getRandomEvent() {
-    return (event_type)(rand() % 5);
-}
+
 
 void concatenate_frames(const frame frames[], int num_frames, char result[MAX_PKT]) {
     result[0] = '\0';  // Initialize the result string
@@ -113,6 +102,7 @@ void concatenate_frames(const frame frames[], int num_frames, char result[MAX_PK
     for (int i = 0; i < num_frames; ++i) {
         if (frames[i].kind == data) {
             strcat(result, frames[i].info.data);  // Concatenate the data field
+            strcat(result," ");
         }
     }
 }
@@ -139,6 +129,7 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
     from_network_layer(SenderPackets[next_frame_to_send]);
     nbuffered = nbuffered + 1;
     send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
+    is_received(event);
     inc(next_frame_to_send);
 
     while (true) {
@@ -160,7 +151,7 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
                 next_frame_to_send = ack_expected;
                 for (i = 1; i <= nbuffered; i++) {
                     send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
-                    inc(next_frame_to_send);
+                    is_received(event);
                 }
                 break;
         }
@@ -177,6 +168,7 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
         from_network_layer(SenderPackets[next_frame_to_send]);
         nbuffered = nbuffered + 1;
         send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
+        is_received(event);
         inc(next_frame_to_send);
     }
 
