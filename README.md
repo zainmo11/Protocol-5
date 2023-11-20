@@ -1,5 +1,21 @@
 # Protocol 5 (Go-Back-N) 
 
+
+
+## Tasks
+
+- The sender send four frames to receiver 
+- while true 
+- if the receiver received the frame 
+- receiver sed ack to sender 
+- elseif receiver didn't receive the frame 
+-  receiver send NAK of frame lost to sender 
+-elseif receiver checksum wroung
+- receiver send all four frames
+- if sender frames finished 
+- sender send frames  from nak  request frame or if it received correct send next four frames
+- else break
+
 ## Overview
 
 This implementation demonstrates Protocol 5, also known as Go-Back-N, for reliable communication over a network. The protocol allows for multiple outstanding frames, where the sender can transmit up to `MAX_SEQ` frames without waiting for an acknowledgment. Unlike previous protocols, Protocol 5 doesn't assume a constant stream of packets from the network layer but relies on a network layer ready event.
