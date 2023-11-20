@@ -92,17 +92,8 @@ void displayEvent(event_type event) {
         case frame_arrival:
             printf("Event: Frame Arrival\n");
             break;
-        case cksum_err:
-            printf("Event: Checksum Error\n");
-            break;
-        case time_out:
-            printf("Event: Timeout\n");
-            break;
-        case network_layer_ready:
-            printf("Event: Network Layer Ready\n");
-            break;
-        case ready:
-            printf("Event: Ready\n");
+        case cksum_err_or_time_out:
+            printf("Event: Checksum or Time out Error\n");
             break;
         default:
             printf("Unknown Event\n");

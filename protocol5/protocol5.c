@@ -78,11 +78,12 @@ static bool between(seq_nr a, seq_nr b, seq_nr c)
 
 static void Receive_data(frame s , frame frames[],seq_nr frame_nr,event_type e){
     /*to randomize the sequence of sending Frames */
-    event_type x  = (event_type)(rand() % 4);
-    if(x == frame_arrival) {
+    event_type randx  = (event_type)(rand() % 4);
+    e = randx;
+    if(randx == frame_arrival) {
         frames[frame_nr] = s;
     }
-    e = x;
+
 }
 
 static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[],event_type event)
@@ -93,7 +94,7 @@ static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], f
     s.seq = frame_nr; /* insert sequence number into frame */
     s.ack = (frame_expected + MAX_SEQ) % (MAX_SEQ + 1);/* piggyback ack */
     to_physical_layer(s); /* transmit the frame */
-    Receive_data(  s,Receiver,frame_nr,e);
+    Receive_data(  s,Receiver,frame_nr,event);
     start_timer(frame_nr); /* start the timer running */
 }
 
@@ -110,7 +111,16 @@ event_type getRandomEvent() {
     return (event_type)(rand() % 5);
 }
 
-void protocol5(const char *sentence)
+void concatenate_frames(const frame frames[], int num_frames, char result[MAX_PKT]) {
+    result[0] = '\0';  // Initialize the result string
+
+    for (int i = 0; i < num_frames; ++i) {
+        if (frames[i].kind == data) {
+            strcat(result, frames[i].info.data);  // Concatenate the data field
+        }
+    }
+}
+void protocol5(const char *sentence , char result[MAX_PKT])
 {
     packet SenderPackets[MAX_PKT],receivedPackets[MAX_PKT];
     frame SenderFrames[MAX_PKT],receivedFrames[MAX_PKT];
@@ -131,7 +141,7 @@ void protocol5(const char *sentence)
     // first send data from receiver and get in while loop until send every frames
     from_network_layer(SenderPackets[next_frame_to_send]); /* fetch new packet */
     nbuffered = nbuffered + 1; /* expand the sender’s window */
-    send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames,event);/* transmit the frame */
+    send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames, event);/* transmit the frame */
     inc(next_frame_to_send); /* advance sender’s upper window edge */
     // begin Task
     while (true) {
@@ -165,13 +175,13 @@ void protocol5(const char *sentence)
         enable_network_layer();
         else
         disable_network_layer();
-
+        if (strcmp(SenderFrames[next_frame_to_send].info.data, "\0") == 0){break;}
         from_network_layer(SenderPackets[next_frame_to_send]); /* fetch new packet */
         nbuffered = nbuffered + 1; /* expand the sender’s window */
         send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames,event);/* transmit the frame */
         inc(next_frame_to_send); /* advance sender’s upper window edge */
     }
-
+    concatenate_frames(receivedFrames, MAX_PKT, result );
 }
 
 
