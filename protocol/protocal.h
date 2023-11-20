@@ -14,8 +14,7 @@ typedef struct { /* frames are transported in this layer */
     packet info; /* the network layer packet */
 } frame;
 boolean timer;
-typedef enum {frame_arrival , cksum_err , time_out , network_layer_ready , ready} event_type;
-typedef enum {arrive ,Frame_missed,Cksum_err} frame_arrives;
+typedef enum {frame_arrival , cksum_err_or_time_out , ready } event_type;
 /* Macro inc is expanded in-line: increment k circularly. */
 #define inc(k) if (k < MAX_SEQ) k = k + 1; else k = 0
 /* Wait for an event to happen; return its type in event. */

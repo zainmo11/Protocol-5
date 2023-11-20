@@ -76,19 +76,16 @@ static bool between(seq_nr a, seq_nr b, seq_nr c)
 }
 
 
-static void Receive_data(frame s , frame frames[],seq_nr frame_nr){
+static void Receive_data(frame s , frame frames[],seq_nr frame_nr,event_type e){
     /*to randomize the sequence of sending Frames */
-    frame_arrives x  = (frame_arrives)(rand() % 3);
-    if(x == arrive){
+    event_type x  = (event_type)(rand() % 4);
+    if(x == frame_arrival) {
         frames[frame_nr] = s;
     }
-    else if(x == Cksum_err || x == Frame_missed){
-        s.ack = -1;
-        frames[frame_nr] = s;
-    }
+    e = x;
 }
 
-static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[])
+static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[],event_type event)
 {
     /* Construct and send a data frame. */
     frame s; /* scratch variable */
@@ -96,7 +93,7 @@ static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], f
     s.seq = frame_nr; /* insert sequence number into frame */
     s.ack = (frame_expected + MAX_SEQ) % (MAX_SEQ + 1);/* piggyback ack */
     to_physical_layer(s); /* transmit the frame */
-    Receive_data( s,Receiver,frame_nr);
+    Receive_data(  s,Receiver,frame_nr,e);
     start_timer(frame_nr); /* start the timer running */
 }
 
@@ -130,53 +127,65 @@ void protocol5(const char *sentence)
     seq_nr i; /* used to index into the buffer array */
     event_type event;
     enable_network_layer(); /* allow network layer ready events */
-    //boolean sender_Or_receiver = true; /* Set sender = true , receiver = false */
+
     // first send data from receiver and get in while loop until send every frames
     from_network_layer(SenderPackets[next_frame_to_send]); /* fetch new packet */
     nbuffered = nbuffered + 1; /* expand the sender’s window */
-    send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames);/* transmit the frame */
+    send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames,event);/* transmit the frame */
     inc(next_frame_to_send); /* advance sender’s upper window edge */
     // begin Task
     while (true) {
+
         wait_for_event(&event);/* four possibilities: see event type above */
         displayEvent(event);
         switch(event) {
-            case network_layer_ready: /* the network layer has a packet to send */
-                /* Accept, save, and transmit a new frame. */
-                from_network_layer(SenderPackets[next_frame_to_send]); /* fetch new packet */
-                nbuffered = nbuffered + 1; /* expand the sender’s window */
-                send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames);/* transmit the frame */
-                inc(next_frame_to_send); /* advance sender’s upper window edge */
-                break;
+
             case frame_arrival: /* a data or control frame has arrived */
                 from_physical_layer(SenderFrames[next_frame_to_send-1]); /* get incoming frame from physical layer */
                 if (is_frame_expected(receivedFrames, frame_expected)) {
                 /* Frames are accepted only in order. */
                     to_network_layer(receivedFrames[frame_expected].info); /* pass packet to network layer */
                     inc(frame_expected); /* advance lower edge of receiver’s window */
-                }
-                /* Ack n implies n − 1, n − 2, etc. Check for this. */
-                while (between(ack_expected, r .ack, next_frame_to_send)) {
-                    /* Handle piggybacked ack. */
                     nbuffered--; /* one frame fewer buffered */
                     stop_timer(ack_expected); /* frame arrived intact; stop timer */
                     inc(ack_expected); /* contract sender’s window */
                 }
                 break;
 
-            case cksum_err: break; /* just ignore bad frames */
-
-            case time_out: /* trouble; retransmit all outstanding frames */
+            case cksum_err_or_time_out: /* trouble; retransmit all outstanding frames */
                 next_frame_to_send = ack_expected; /* start retransmitting here */
                 for (i = 1; i <= nbuffered; i++) {
-                    send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames);/* resend frame */
+                    send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames,event);/* resend frame */
                     inc(next_frame_to_send); /* prepare to send the next one */
                 }
+                break;
         }
-      //  sender_Or_receiver = ~ sender_Or_receiver;
+
         if (nbuffered < MAX_SEQ)
         enable_network_layer();
         else
         disable_network_layer();
+
+        from_network_layer(SenderPackets[next_frame_to_send]); /* fetch new packet */
+        nbuffered = nbuffered + 1; /* expand the sender’s window */
+        send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames,event);/* transmit the frame */
+        inc(next_frame_to_send); /* advance sender’s upper window edge */
     }
+
 }
+
+
+
+
+//    while (i){
+//        if (receivedFrames[ack_expected].seq == frame_expected){
+//            to_network_layer(receivedFrames[ack_expected].info);
+//            inc(frame_expected);
+//            while (between(ack_expected, r .ack, next_frame_to_send)) {
+//                /* Handle piggybacked ack. */
+//                nbuffered--; /* one frame fewer buffered */
+//                stop_timer(ack_expected); /* frame arrived intact; stop timer */
+//                inc(ack_expected); /* contract sender’s window */
+//        }
+//
+//    }
