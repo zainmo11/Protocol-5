@@ -23,6 +23,7 @@ void Serialize_to_packet(const char *sentence, packet words[MAX_PKT]) {
         token = strtok(NULL, " ");
         i++;
     }
+    words[i].data[0] = '\0';
 }
 
 void Serialize_to_frame(packet words[MAX_PKT], frame frames[MAX_PKT]) {
@@ -87,7 +88,7 @@ static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], f
 }
 
 boolean is_frame_expected(frame receiver[],seq_nr frame_expected) {
-    for (int i = 0; i <= MAX_SEQ; i++) {
+    for (int i = 0; i < MAX_SEQ; i++) {
         if (receiver[i].seq == frame_expected) {
             return true;
         }
@@ -129,7 +130,7 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
     from_network_layer(SenderPackets[next_frame_to_send]);
     nbuffered = nbuffered + 1;
     send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
-    is_received(event);
+    is_received(event, frame_expected);
     inc(next_frame_to_send);
 
     while (true) {
@@ -149,10 +150,8 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
 
             case cksum_err_or_time_out:
                 next_frame_to_send = ack_expected;
-                for (i = 1; i <= nbuffered; i++) {
-                    send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
-                    is_received(event);
-                }
+                send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
+                is_received(event, frame_expected);
                 break;
         }
 
@@ -168,7 +167,7 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
         from_network_layer(SenderPackets[next_frame_to_send]);
         nbuffered = nbuffered + 1;
         send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
-        is_received(event);
+        is_received(event, frame_expected);
         inc(next_frame_to_send);
     }
 

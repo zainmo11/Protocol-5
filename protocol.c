@@ -18,8 +18,8 @@ void wait_for_event(event_type *event) {
     printf("\n");
 }
 
-void is_received(event_type e) {
-    e == frame_arrival ? printf("Data Received\n") : printf("Data not received\n");
+void is_received(event_type e, seq_nr frame_expected) {
+    e == frame_arrival ? printf("Data %i Received\n", frame_expected) : printf("Data %i not received\n", frame_expected);
     sleep(1);
 }
 

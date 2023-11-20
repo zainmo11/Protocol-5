@@ -57,7 +57,7 @@ void enable_network_layer(void);
 /* Forbid the network layer from causing a network layer ready event. */
 void disable_network_layer(void);
 
-void is_received(event_type e);
+void is_received(event_type e, seq_nr frame_expected);
 
 void displayEvent(event_type event);
 

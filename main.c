@@ -3,7 +3,7 @@
 
 int main() {
 
-    char data[]="Hello, this is protocol 5";
+    char data[]="Hello, this is protocol 5 Hello, this is protocol 5 Hello, this is protocol 5 Hello, this is protocol 5";
     char result[MAX_PKT];
     protocol5(data,result);
     printf("Result: %s\n", result);

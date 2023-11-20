@@ -2,7 +2,7 @@
 #define PROTOCOL5_H
 #include "stdbool.h"
 #include "protocol.h"
-#define MAX_SEQ 7
+#define MAX_SEQ 100
 
 void Serialize_to_packet(const char *sentence, packet words[MAX_PKT]);
 
