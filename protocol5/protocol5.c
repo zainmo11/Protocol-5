@@ -75,6 +75,19 @@ static bool between(seq_nr a, seq_nr b, seq_nr c)
         return(false);
 }
 
+
+static void Receive_data(frame s , frame frames[],seq_nr frame_nr){
+    /*to randomize the sequence of sending Frames */
+    frame_arrives x  = (frame_arrives)(rand() % 3);
+    if(x == arrive){
+        frames[frame_nr] = s;
+    }
+    else if(x == Cksum_err || x == Frame_missed){
+        s.ack = -1;
+        frames[frame_nr] = s;
+    }
+}
+
 static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[])
 {
     /* Construct and send a data frame. */
@@ -83,7 +96,7 @@ static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], f
     s.seq = frame_nr; /* insert sequence number into frame */
     s.ack = (frame_expected + MAX_SEQ) % (MAX_SEQ + 1);/* piggyback ack */
     to_physical_layer(s); /* transmit the frame */
-    Receiver[frame_nr] = s;
+    Receive_data( s,Receiver,frame_nr);
     start_timer(frame_nr); /* start the timer running */
 }
 
@@ -117,9 +130,13 @@ void protocol5(const char *sentence)
     seq_nr i; /* used to index into the buffer array */
     event_type event;
     enable_network_layer(); /* allow network layer ready events */
-    boolean sender_Or_receiver = true; /* Set sender = true , receiver = false */
-
-
+    //boolean sender_Or_receiver = true; /* Set sender = true , receiver = false */
+    // first send data from receiver and get in while loop until send every frames
+    from_network_layer(SenderPackets[next_frame_to_send]); /* fetch new packet */
+    nbuffered = nbuffered + 1; /* expand the sender’s window */
+    send_data(next_frame_to_send, frame_expected, SenderPackets,receivedFrames);/* transmit the frame */
+    inc(next_frame_to_send); /* advance sender’s upper window edge */
+    // begin Task
     while (true) {
         wait_for_event(&event);/* four possibilities: see event type above */
         displayEvent(event);
@@ -139,7 +156,7 @@ void protocol5(const char *sentence)
                     inc(frame_expected); /* advance lower edge of receiver’s window */
                 }
                 /* Ack n implies n − 1, n − 2, etc. Check for this. */
-                while (between(ack_expected, r.ack, next_frame_to_send)) {
+                while (between(ack_expected, r .ack, next_frame_to_send)) {
                     /* Handle piggybacked ack. */
                     nbuffered--; /* one frame fewer buffered */
                     stop_timer(ack_expected); /* frame arrived intact; stop timer */
@@ -156,6 +173,7 @@ void protocol5(const char *sentence)
                     inc(next_frame_to_send); /* prepare to send the next one */
                 }
         }
+      //  sender_Or_receiver = ~ sender_Or_receiver;
         if (nbuffered < MAX_SEQ)
         enable_network_layer();
         else
