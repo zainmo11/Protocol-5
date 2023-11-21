@@ -4,18 +4,21 @@
 
 ## Tasks
 
-- The sender send four frames to receiver 
-- while true 
-- if the receiver received the frame 
-- receiver sed ack to sender 
-- elseif receiver didn't receive the frame 
--  receiver send NAK of frame lost to sender 
--elseif receiver checksum wroung
-- receiver send all four frames
-- if sender frames finished 
-- sender send frames  from nak  request frame or if it received correct send next four frames
-- else break
+- <s>The sender sends four frames to receiver </s>
+- <s>while true </s>
+- <s>if the receiver received the frame</s> 
+- <s>receiver sed ack to sender </s>
+- <s>elseif receiver didn't receive the frame</s> 
+- <s>receiver send NAK of frame lost to sender </s>
+- <s>elseif receiver checksum wroung</s>
+- <s>receiver sends all four frames</s>
+- <s>if sender frames finished </s>
+- <s>sender send frames  from nak  request frame or if it received correctly send next four frames</s>
+- <s>else break</s>
 
+
+## Last task
+-Let the program send four frames at once, and if an error occurs, the sender re-sends frames starting from the one that had the error. 
 ## Overview
 
 This implementation demonstrates Protocol 5, also known as Go-Back-N, for reliable communication over a network. The protocol allows for multiple outstanding frames, where the sender can transmit up to `MAX_SEQ` frames without waiting for an acknowledgment. Unlike previous protocols, Protocol 5 doesn't assume a constant stream of packets from the network layer but relies on a network layer ready event.
