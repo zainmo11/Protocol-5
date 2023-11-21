@@ -4,7 +4,7 @@
 #include "protocol5.h"
 #include <string.h>
 
-
+# define no_frames 4
 /* Protocol 5 (Go-back-n) allows multiple outstanding frames. The sender may transmit up
 to MAX SEQ frames without waiting for an ack. In addition, unlike in the previous
 protocols, the network layer is not assumed to have a new packet all the time. Instead,
@@ -94,6 +94,7 @@ void concatenate_frames(const frame frames[], int num_frames, char result[MAX_PK
 
 static void Receive_data(frame s, frame frames[], seq_nr frame_nr, event_type *e)
 {
+    // 1 t    2 t     3 f   must discard ( 4 t )
     /*to randomize the sequence of sending Frames */
     event_type randx = (event_type)(rand() % 3);
     *e = randx;
@@ -125,6 +126,20 @@ boolean is_frame_expected(frame receiver[],seq_nr frame_expected) {
 }
 
 
+static void Multiple_send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[], event_type *event){
+    for (int i = 0; i < no_frames;i++) {
+        send_data( frame_nr + i,  frame_expected + i,  buffer,  Receiver,  event);
+    }
+}
+
+int Multiple_is_frame_expected(frame receiver[],seq_nr frame_expected){
+    int i ;
+    for( i = 0; i < no_frames;i++) {
+
+        if(!is_frame_expected( receiver, frame_expected)) break;
+    }
+    return i;
+}
 
 
 
@@ -142,12 +157,12 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
     seq_nr frame_expected = 0;
     seq_nr nbuffered = 0;
     event_type event;
-
+    int i ;
     enable_network_layer();
 
     from_network_layer(SenderPackets[next_frame_to_send]);
     nbuffered = nbuffered + 1;
-    send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
+    Multiple_send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
     start_ack_timer();
     is_received(event, frame_expected);
     inc(next_frame_to_send);
@@ -158,7 +173,8 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
         switch (event) {
             case frame_arrival:
                 from_physical_layer(receivedFrames[next_frame_to_send - 1]);
-                if (is_frame_expected(receivedFrames, frame_expected)) {
+                i = Multiple_is_frame_expected(receivedFrames, frame_expected);
+                if (i>0) {
                     to_network_layer(receivedFrames[frame_expected].info);
                     inc(frame_expected);
                     nbuffered--;
@@ -167,13 +183,14 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
 
                     inc(ack_expected);
                 }
+                i= 0;
                 break;
 
             case cksum_err:
             case time_out:
                 stop_ack_timer();
                 next_frame_to_send = ack_expected;
-                send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
+                Multiple_send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
                 start_ack_timer();
                 is_received(event, frame_expected);
                 break;
@@ -190,7 +207,7 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
 
         from_network_layer(SenderPackets[next_frame_to_send]);
         nbuffered = nbuffered + 1;
-        send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
+        Multiple_send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
         start_ack_timer();
         is_received(event, frame_expected);
         inc(next_frame_to_send);

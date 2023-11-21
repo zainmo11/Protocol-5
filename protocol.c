@@ -69,12 +69,10 @@ void to_physical_layer(frame s) {
 
 void start_timer(seq_nr k) {
     printf("[TRANSMITTER]: Start Timer for sequence number %i\n", k);
-    timer = true;
 }
 
 void stop_timer(seq_nr k) {
     printf("[TRANSMITTER]: End Timer for sequence number %i\n", k);
-    timer = false;
     usleep(sleep_time);
 }
 
