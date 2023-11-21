@@ -74,12 +74,21 @@ void display_packets(const packet words[MAX_PKT]) {
     }
 }
 
+void concatenate_frames(const frame frames[], int num_frames, char result[MAX_PKT]) {
+    result[0] = '\0';  // Initialize the result string
 
+    for (int i = 0; i < num_frames; ++i) {
+        if (frames[i].kind == data) {
+            strcat(result, frames[i].info.data);  // Concatenate the data field
+            strcat(result," ");
+        }
+    }
+}
 
 static void Receive_data(frame s, frame frames[], seq_nr frame_nr, event_type *e)
 {
     /*to randomize the sequence of sending Frames */
-    event_type randx = (event_type)(rand() % 2);
+    event_type randx = (event_type)(rand() % 3);
     *e = randx;
     if (randx == frame_arrival) {
         frames[frame_nr] = s;
@@ -109,16 +118,7 @@ boolean is_frame_expected(frame receiver[],seq_nr frame_expected) {
 }
 
 
-void concatenate_frames(const frame frames[], int num_frames, char result[MAX_PKT]) {
-    result[0] = '\0';  // Initialize the result string
 
-    for (int i = 0; i < num_frames; ++i) {
-        if (frames[i].kind == data) {
-            strcat(result, frames[i].info.data);  // Concatenate the data field
-            strcat(result," ");
-        }
-    }
-}
 
 
 void protocol5(const char *sentence, char result[MAX_PKT]) {
@@ -160,7 +160,8 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
                 }
                 break;
 
-            case cksum_err_or_time_out:
+            case cksum_err:
+            case time_out:
                 next_frame_to_send = ack_expected;
                 send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
                 is_received(event, frame_expected);
@@ -182,7 +183,7 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
         is_received(event, frame_expected);
         inc(next_frame_to_send);
     }
-
+    display_frames(receivedFrames);
     concatenate_frames(receivedFrames, MAX_PKT, result);
 }
 

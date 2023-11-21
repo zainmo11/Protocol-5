@@ -80,8 +80,9 @@ void displayEvent(event_type event) {
         case frame_arrival:
             printf("[EVENT]: Frame Arrival\n");
             break;
-        case cksum_err_or_time_out:
-            printf("[EVENT]: Checksum or Time out Error\n");
+        case cksum_err:
+        case time_out:
+            printf("[EVENT]: %s Error\n", (event == cksum_err) ? "Checksum" : "Time out");
             break;
         default:
             printf("[EVENT]: Unknown\n");

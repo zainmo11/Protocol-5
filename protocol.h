@@ -19,7 +19,7 @@ typedef struct { /* frames are transported in this layer */
 
 extern boolean timer;
 
-typedef enum { frame_arrival, cksum_err_or_time_out } event_type;
+typedef enum { frame_arrival, cksum_err, time_out } event_type;
 
 /* Macro inc is expanded in-line: increment k circularly. */
 #define inc(k) if (k < MAX_SEQ) k = k + 1; else k = 0
