@@ -68,7 +68,7 @@ void display_packets(const packet words[MAX_PKT]) {
         printf("Packet %*d: %-*s", maxPacketNumberWidth, i + 1, dataWidth, words[i].data);
 
         // Print newline after every fourth column
-        if ((i + 1) % 4 == 0 || words[i + 1].data[0] == '\0') {
+        if ((i + 1) % 2 == 0 || words[i + 1].data[0] == '\0') {
             printf("\n");
         }
     }
