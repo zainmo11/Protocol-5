@@ -17,7 +17,6 @@ typedef struct { /* frames are transported in this layer */
     packet info; /* the network layer packet */
 } frame;
 
-extern boolean timer;
 
 typedef enum { frame_arrival, cksum_err, time_out } event_type;
 
@@ -25,7 +24,7 @@ typedef enum { frame_arrival, cksum_err, time_out } event_type;
 #define inc(k) if (k < MAX_SEQ) k = k + 1; else k = 0
 
 /* Wait for an event to happen; return its type in event. */
-void wait_for_event(event_type *event);
+void wait_for_event();
 
 /* Fetch a packet from the network layer for transmission on the channel. */
 void from_network_layer(packet p);
