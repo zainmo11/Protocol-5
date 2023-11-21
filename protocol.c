@@ -1,7 +1,7 @@
 #include "protocol.h"
 #include <stdio.h>
 #include <unistd.h>
-#define sleep_time 500000
+#define sleep_time 50
 
 
 void wait_for_event() {
@@ -42,28 +42,28 @@ void disable_network_layer(void) {
    Wrapping a function with another function that takes a variable number of frames and starts from the beginning of the given frame.
  */
 
-void is_received(event_type e, seq_nr frame_expected) {
-    e == frame_arrival ? printf("[RECEIVER]: Data %i Received\n", frame_expected) : printf("[RECEIVER]: Data %i not received\n", frame_expected);
+void is_received(event_type e, frame frame_expected) {
+    e == frame_arrival ? printf("[RECEIVER]: Data %s Received\n", frame_expected.info.data) : printf("[RECEIVER]: Data %s not received\n", frame_expected.info.data);
     usleep(sleep_time);
 }
 
 void from_network_layer(packet p) {
-    printf("[TRANSMITTER]: Get Packet '%s' from network layer to physical layer\n", p.data);
+    printf("[TRANSMITTER]: Get Packet '%s' from network layer \n", p.data);
     usleep(sleep_time);
 }
 
 void to_network_layer(packet p) {
-    printf("[RECEIVER]: Send Packet '%s' from physical layer to network layer\n", p.data);
+    printf("[RECEIVER]: Send Packet '%s' to network layer\n", p.data);
     usleep(sleep_time);
 }
 
 void from_physical_layer(frame r) {
-    printf("[RECEIVER]: Get frame '%s' to network layer\n", r.info.data);
+    printf("[RECEIVER]: Get frame '%s' from physical layer\n", r.info.data);
     usleep(sleep_time);
 }
 
 void to_physical_layer(frame s) {
-    printf("[TRANSMITTER]: Send frame '%s' to network layer\n", s.info.data);
+    printf("[TRANSMITTER]: Send frame '%s' to physical layer\n", s.info.data);
     usleep(sleep_time);
 }
 
