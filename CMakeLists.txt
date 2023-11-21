@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
-project(untitled29 C)
+project(Protocol_5 C)
 
 set(CMAKE_C_STANDARD 23)
 
-add_executable(untitled29 main.c protocol/protocal.h protocol/protocal.c protocol5/protocol5.h protocol5/protocol5.c)
+add_executable(Protocol_5 main.c protocol.c protocol5.c)

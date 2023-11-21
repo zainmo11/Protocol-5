@@ -46,20 +46,31 @@ void Serialize_to_frame(packet words[MAX_PKT], frame frames[MAX_PKT]) {
 }
 
 void display_frames(const frame frames[MAX_PKT]) {
+    printf("Frames:\n");
+
+    int maxFrameNumberWidth = 2;  // Adjust according to the number of frames
+
     for (int i = 0; i < MAX_PKT && frames[i].info.data[0] != '\0'; i++) {
-        printf("Frame %d:\n", i + 1);
-        printf("  Kind: %d\n", frames[i].kind);
-        printf("  Seq: %d\n", frames[i].seq);
-        printf("  Ack: %d\n", frames[i].ack);
-        printf("  Data: %s\n", frames[i].info.data);
-        printf("\n");
+        // Use dynamic width for frame numbers and fixed width for other columns
+        printf("Frame %*d:  Kind: %d  Seq: %d  Ack: %d  Data: %s\n",
+               maxFrameNumberWidth, i + 1, frames[i].kind, frames[i].seq, frames[i].ack, frames[i].info.data);
     }
 }
 
 void display_packets(const packet words[MAX_PKT]) {
     printf("Packets:\n");
+
+    int maxPacketNumberWidth = 2;  // Adjust according to the number of packets
+    int dataWidth = 20;
+
     for (int i = 0; i < MAX_PKT && words[i].data[0] != '\0'; ++i) {
-        printf("Packet %d: %s\n", i + 1, words[i].data);
+        // Use dynamic width for packet numbers and fixed width for data
+        printf("Packet %*d: %-*s", maxPacketNumberWidth, i + 1, dataWidth, words[i].data);
+
+        // Print newline after every fourth column
+        if ((i + 1) % 4 == 0 || words[i + 1].data[0] == '\0') {
+            printf("\n");
+        }
     }
 }
 

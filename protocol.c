@@ -18,27 +18,27 @@ void wait_for_event(event_type *event) {
 }
 
 void is_received(event_type e, seq_nr frame_expected) {
-    e == frame_arrival ? printf("Data %i Received\n", frame_expected) : printf("Data %i not received\n", frame_expected);
+    e == frame_arrival ? printf("Data (%i) Received\n", frame_expected) : printf("Data (%i) not received\n", frame_expected);
     usleep(sleep_time);
 }
 
 void from_network_layer(packet p) {
-    printf("Take Packet %s from network layer to physical layer\n", p.data);
+    printf("Take Packet (%s) from network layer to physical layer\n", p.data);
     usleep(sleep_time);
 }
 
 void to_network_layer(packet p) {
-    printf("Take Packet %s from physical layer to network layer\n", p.data);
+    printf("Take Packet (%s) from physical layer to network layer\n", p.data);
     usleep(sleep_time);
 }
 
 void from_physical_layer(frame r) {
-    printf("Take frame %s to network layer\n", r.info.data);
+    printf("Take frame (%s) to network layer\n", r.info.data);
     usleep(sleep_time);
 }
 
 void to_physical_layer(frame s) {
-    printf("Take frame %s to network layer\n", s.info.data);
+    printf("Take frame (%s) to network layer\n", s.info.data);
     usleep(sleep_time);
 }
 
