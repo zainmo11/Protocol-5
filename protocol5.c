@@ -96,6 +96,7 @@ static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], f
     to_physical_layer(s); /* transmit the frame */
     Receive_data(s, Receiver, frame_nr, event);
     start_timer(frame_nr); /* start the timer running */
+    displayEvent(*event);
 }
 
 boolean is_frame_expected(frame receiver[],seq_nr frame_expected) {

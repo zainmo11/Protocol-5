@@ -1,7 +1,7 @@
 #include "protocol.h"
 #include <stdio.h>
 #include <unistd.h>
-#define sleep_time 1000000
+#define sleep_time 500000
 // Assuming timer is a global variable
 boolean timer = false;
 
@@ -18,37 +18,37 @@ void wait_for_event(event_type *event) {
 }
 
 void is_received(event_type e, seq_nr frame_expected) {
-    e == frame_arrival ? printf("Data (%i) Received\n", frame_expected) : printf("Data (%i) not received\n", frame_expected);
+    e == frame_arrival ? printf("[RECEIVER]: Data %i Received\n", frame_expected) : printf("[RECEIVER]: Data %i not received\n", frame_expected);
     usleep(sleep_time);
 }
 
 void from_network_layer(packet p) {
-    printf("Take Packet (%s) from network layer to physical layer\n", p.data);
+    printf("[TRANSMITTER]: Get Packet '%s' from network layer to physical layer\n", p.data);
     usleep(sleep_time);
 }
 
 void to_network_layer(packet p) {
-    printf("Take Packet (%s) from physical layer to network layer\n", p.data);
+    printf("[RECEIVER]: Send Packet '%s' from physical layer to network layer\n", p.data);
     usleep(sleep_time);
 }
 
 void from_physical_layer(frame r) {
-    printf("Take frame (%s) to network layer\n", r.info.data);
+    printf("[RECEIVER]: Get frame '%s' to network layer\n", r.info.data);
     usleep(sleep_time);
 }
 
 void to_physical_layer(frame s) {
-    printf("Take frame (%s) to network layer\n", s.info.data);
+    printf("[TRANSMITTER]: Send frame '%s' to network layer\n", s.info.data);
     usleep(sleep_time);
 }
 
 void start_timer(seq_nr k) {
-    printf("Start Timer for sequence number %i\n", k);
+    printf("[TRANSMITTER]: Start Timer for sequence number %i\n", k);
     timer = true;
 }
 
 void stop_timer(seq_nr k) {
-    printf("End Timer for sequence number %i\n", k);
+    printf("[TRANSMITTER]: End Timer for sequence number %i\n", k);
     timer = false;
     usleep(sleep_time);
 }
@@ -78,12 +78,12 @@ void disable_network_layer(void) {
 void displayEvent(event_type event) {
     switch (event) {
         case frame_arrival:
-            printf("Event: Frame Arrival\n");
+            printf("[EVENT]: Frame Arrival\n");
             break;
         case cksum_err_or_time_out:
-            printf("Event: Checksum or Time out Error\n");
+            printf("[EVENT]: Checksum or Time out Error\n");
             break;
         default:
-            printf("Unknown Event\n");
+            printf("[EVENT]: Unknown\n");
     }
 }
