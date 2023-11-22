@@ -1,7 +1,7 @@
 #include "protocol.h"
 #include <stdio.h>
 #include <unistd.h>
-#define sleep_time 500000
+#define sleep_time 0
 
 
 void wait_for_event() {

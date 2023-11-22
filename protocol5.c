@@ -11,9 +11,10 @@ the network layer causes a network layer ready event when there is a packet to s
 
 #define MAX_FRAMES 4
 
-int event_index = 0;
+int end_frames = 0;
 event_type events[MAX_FRAMES];
 frame s; /* Scratch variable */
+
 
 void Serialize_to_packet(const char *sentence, packet words[MAX_PKT]) {
     // Create a temporary copy of the sentence to avoid modifying the original string
@@ -50,6 +51,7 @@ void Serialize_to_frame(packet words[MAX_PKT], frame frames[MAX_PKT]) {
     frames[i].seq = i;
     frames[i].ack = 0;
     frames[i].info.data[0] = '\0';
+    end_frames = i;
 }
 
 void display_frames(const frame frames[MAX_PKT]) {
@@ -123,6 +125,7 @@ boolean is_frame_expected(frame receiver[],seq_nr frame_expected) {
 }
 
 static void send_multiple_frames(seq_nr *frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[], event_type *event){
+
     for(int i = 0; i < MAX_FRAMES; i++){
         from_network_layer(buffer[*frame_nr]);
         send_data(*frame_nr, frame_expected, buffer);
@@ -132,31 +135,43 @@ static void send_multiple_frames(seq_nr *frame_nr, seq_nr frame_expected, packet
         start_ack_timer(*frame_nr);
         displayEvent(*event);
         inc(*frame_nr);
+        if((*frame_nr) == end_frames) {
+            *frame_nr = *frame_nr + (MAX_FRAMES - (i + 1));
+            break;
+        }
     }
+
     *event = events[0];
     printf("\n");
 }
 
 static void is_expected(frame receiver[],seq_nr frame_expected, seq_nr *frame_nr, seq_nr *n_buf,
                         seq_nr *ack_expect, event_type *e){
+
     for(int i = 0; i < MAX_FRAMES; i++){
+        if((*frame_nr - MAX_FRAMES + i ) == end_frames) {
+            *n_buf = *n_buf - (MAX_FRAMES - i);
+            break;
+        }
         if (is_frame_expected(receiver, frame_expected) && events[i] == frame_arrival) {
             from_physical_layer(receiver[*frame_nr - 4 + i]);
             displayEvent(events[i]);
             is_received(True, *frame_nr - 4 + i);
             to_network_layer(receiver[*frame_nr - 4 + i].info);
             stop_ack_timer(*frame_nr - 4 + i);
-            stop_timer(*ack_expect);
+            stop_timer(*frame_nr - 4 + i);
             inc(frame_expected);
             *n_buf = *n_buf - 1;
             inc(*ack_expect);
         }
         else {
+            *n_buf = *n_buf - (MAX_FRAMES - i);
             *e = events[i];
             displayEvent(events[i]);
             is_received(False, *frame_nr - 4 + i);
             break;
         }
+
     }
     printf("\n");
 
