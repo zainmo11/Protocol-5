@@ -1,14 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "protocol.h"
-#include "protocol5.h"
-#include <string.h>
-
-# define no_frames 4
 /* Protocol 5 (Go-back-n) allows multiple outstanding frames. The sender may transmit up
 to MAX SEQ frames without waiting for an ack. In addition, unlike in the previous
 protocols, the network layer is not assumed to have a new packet all the time. Instead,
 the network layer causes a network layer ready event when there is a packet to send. */
+
+#include <stdio.h>
+#include "protocol.h"
+#include "protocol5.h"
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_FRAMES 4
+
+int event_index = 0;
+event_type events[MAX_FRAMES];
+frame s; /* Scratch variable */
 
 void Serialize_to_packet(const char *sentence, packet words[MAX_PKT]) {
     // Create a temporary copy of the sentence to avoid modifying the original string
@@ -87,41 +92,25 @@ void concatenate_frames(const frame frames[], int num_frames, char result[MAX_PK
     }
 }
 
-/*
- todo :
-   Wrapping a function with another function that takes a variable number of frames and starts from the beginning of the given frame.
- */
 
-static boolean Receive_data(frame s, frame frames[], seq_nr frame_nr, event_type *e)
+static void Receive_data(frame scratch, frame frames[], seq_nr frame_nr, event_type *e)
 {
-    // 1 t    2 t     3 f 4 t
     /*to randomize the sequence of sending Frames */
-    event_type randx = (event_type)(rand() % 3);
-    *e = randx;
-    is_received(randx,s );
-    if (randx == frame_arrival) {
-        frames[frame_nr] = s;
-
-        return true;
+    event_type rand_x = (event_type)(rand() % 3);
+    *e = rand_x;
+    if (rand_x == frame_arrival) {
+        frames[frame_nr] = scratch;
     }
-
-    return false;
 }
 
-static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[], event_type *event)
+static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[])
 {
-
-    for (int i = 0; i < no_frames; i++) {
-        /* Construct and send a data frame. */
-        frame s; /* scratch variable */
-        s.info = buffer[frame_nr+i]; /* insert packet into frame */
-        s.seq = frame_nr+i; /* insert sequence number into frame */
-        s.ack = (frame_expected+i + MAX_SEQ) % (MAX_SEQ + 1);/* piggyback ack */
-        to_physical_layer(s); /* transmit the frame */
-        if(!Receive_data(s, Receiver, frame_nr+i, event) ) break;
-        start_timer(frame_nr+i); /* start the timer running */
-        displayEvent(*event);
-    }
+    /* Construct and send a data frame. */
+    s.info = buffer[frame_nr]; /* insert packet into frame */
+    s.seq = frame_nr; /* insert sequence number into frame */
+    s.ack = (frame_expected==0)? 0 : (frame_expected + MAX_SEQ) % (MAX_SEQ + 1);/* piggyback ack */
+    s.kind = data;
+    to_physical_layer(s); /* transmit the frame */
 }
 
 boolean is_frame_expected(frame receiver[],seq_nr frame_expected) {
@@ -133,23 +122,45 @@ boolean is_frame_expected(frame receiver[],seq_nr frame_expected) {
     return false;
 }
 
-
-//static void Multiple_send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[], event_type *event){
-//    for (int i = 0; i < no_frames;i++) {
-//        send_data( frame_nr + i,  frame_expected + i,  buffer,  Receiver,  event);
-//    }
-//}
-
-int Multiple_is_frame_expected(frame receiver[],seq_nr frame_expected){
-    int i ;
-    for( i = 0; i < no_frames;i++) {
-
-        if(!is_frame_expected( receiver, frame_expected)) break;
+static void send_multiple_frames(seq_nr *frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[], event_type *event){
+    for(int i = 0; i < MAX_FRAMES; i++){
+        from_network_layer(buffer[*frame_nr]);
+        send_data(*frame_nr, frame_expected, buffer);
+        Receive_data(s, Receiver, *frame_nr, event);
+        events[i] = *event;
+        start_timer(*frame_nr); /* start the timer running */
+        start_ack_timer(*frame_nr);
+        displayEvent(*event);
+        inc(*frame_nr);
     }
-    return i;
+    *event = events[0];
+    printf("\n");
 }
 
+static void is_expected(frame receiver[],seq_nr frame_expected, seq_nr *frame_nr, seq_nr *n_buf,
+                        seq_nr *ack_expect, event_type *e){
+    for(int i = 0; i < MAX_FRAMES; i++){
+        if (is_frame_expected(receiver, frame_expected) && events[i] == frame_arrival) {
+            from_physical_layer(receiver[*frame_nr - 4 + i]);
+            displayEvent(events[i]);
+            is_received(True, *frame_nr - 4 + i);
+            to_network_layer(receiver[*frame_nr - 4 + i].info);
+            stop_ack_timer(*frame_nr - 4 + i);
+            stop_timer(*ack_expect);
+            inc(frame_expected);
+            *n_buf = *n_buf - 1;
+            inc(*ack_expect);
+        }
+        else {
+            *e = events[i];
+            displayEvent(events[i]);
+            is_received(False, *frame_nr - 4 + i);
+            break;
+        }
+    }
+    printf("\n");
 
+}
 
 void protocol5(const char *sentence, char result[MAX_PKT]) {
     packet SenderPackets[MAX_PKT];
@@ -165,54 +176,68 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
     seq_nr frame_expected = 0;
     seq_nr nbuffered = 0;
     event_type event;
-    int i ;
+
     enable_network_layer();
+    nbuffered = nbuffered + 4;
+    send_multiple_frames(&next_frame_to_send,
+                         frame_expected,
+                         SenderPackets,
+                         receivedFrames,
+                         &event);
+
+
     while (true) {
+        wait_for_event();
+
+
+        switch (event) {
+            case frame_arrival:
+                is_expected(receivedFrames,
+                            frame_expected,
+                            &next_frame_to_send,
+                            &nbuffered, &ack_expected, &event);
+
+                next_frame_to_send = ack_expected;
+                break;
+
+
+            case cksum_err:
+            case time_out:
+                stop_ack_timer(ack_expected);
+                next_frame_to_send = ack_expected;
+                send_multiple_frames(&next_frame_to_send,
+                                     frame_expected,
+                                     SenderPackets,
+                                     receivedFrames,
+                                     &event);
+                wait_for_event();
+                is_expected(receivedFrames,
+                            frame_expected,
+                            &next_frame_to_send,
+                            &nbuffered, &ack_expected, &event);
+                next_frame_to_send = ack_expected;
+                break;
+        }
 
         if (SenderFrames[next_frame_to_send].info.data[0] == 0) {
             break;
         }
 
-        for (int k = 0; k < no_frames; k++) {
-            from_network_layer(SenderPackets[next_frame_to_send+k]);
-        }
-        nbuffered = nbuffered + 4;
-        send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
-        start_ack_timer();
-        inc(next_frame_to_send,4);
-        wait_for_event();
 
-        switch (event) {
-            case frame_arrival:
-                i = Multiple_is_frame_expected(receivedFrames, frame_expected);
-                if (i>0) {
-                    for (int j = 0; j <= i; j++) {
-                        from_physical_layer(receivedFrames[next_frame_to_send - 1+i-4]);
-                        to_network_layer(receivedFrames[frame_expected+j].info);
-                    }
-                    inc(frame_expected,i);
-                    nbuffered=nbuffered - i;
-                    stop_ack_timer();
-                    stop_timer(ack_expected);
-
-                    inc(ack_expected,i);
-                }
-                i = 0;
-                break;
-
-            case cksum_err:
-            case time_out:
-                stop_ack_timer();
-                next_frame_to_send = ack_expected;
-                send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
-                start_ack_timer();
-                break;
-        }
 
         if (nbuffered < MAX_SEQ)
             enable_network_layer();
         else
             disable_network_layer();
+
+
+        nbuffered = nbuffered + 4;
+        send_multiple_frames(&next_frame_to_send,
+                             frame_expected,
+                             SenderPackets,
+                             receivedFrames,
+                             &event);
+
 
 
     }

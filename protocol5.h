@@ -12,7 +12,7 @@ void display_frames(const frame frames[MAX_PKT]);
 
 void display_packets(const packet words[MAX_PKT]);
 
-static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[], frame Receiver[],event_type *event);
+static void send_data(seq_nr frame_nr, seq_nr frame_expected, packet buffer[]);
 
 void protocol5(const char *sentence ,char result[MAX_PKT]);
 
