@@ -9,10 +9,10 @@ the network layer causes a network layer ready event when there is a packet to s
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_FRAMES 4
+#define MAX_FRAMES 7
 
 int end_frames = 0;
-event_type events[MAX_FRAMES];
+event_type events[MAX_FRAMES + 1];
 frame s; /* Scratch variable */
 
 
@@ -154,12 +154,12 @@ static void is_expected(frame receiver[],seq_nr frame_expected, seq_nr *frame_nr
             break;
         }
         if (is_frame_expected(receiver, frame_expected) && events[i] == frame_arrival) {
-            from_physical_layer(receiver[*frame_nr - 4 + i]);
+            from_physical_layer(receiver[*frame_nr - MAX_FRAMES + i]);
             displayEvent(events[i]);
-            is_received(True, *frame_nr - 4 + i);
-            to_network_layer(receiver[*frame_nr - 4 + i].info);
-            stop_ack_timer(*frame_nr - 4 + i);
-            stop_timer(*frame_nr - 4 + i);
+            is_received(True, *frame_nr - MAX_FRAMES + i);
+            to_network_layer(receiver[*frame_nr - MAX_FRAMES + i].info);
+            stop_ack_timer(*frame_nr - MAX_FRAMES + i);
+            stop_timer(*frame_nr - MAX_FRAMES + i);
             inc(frame_expected);
             *n_buf = *n_buf - 1;
             inc(*ack_expect);
@@ -168,7 +168,7 @@ static void is_expected(frame receiver[],seq_nr frame_expected, seq_nr *frame_nr
             *n_buf = *n_buf - (MAX_FRAMES - i);
             *e = events[i];
             displayEvent(events[i]);
-            is_received(False, *frame_nr - 4 + i);
+            is_received(False, *frame_nr - MAX_FRAMES + i);
             break;
         }
 
