@@ -167,15 +167,19 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
     event_type event;
     int i ;
     enable_network_layer();
-    for (int k = 0; k < no_frames; k++) {
-        from_network_layer(SenderPackets[next_frame_to_send+k]);
-    }
-    nbuffered = nbuffered + 4;
-    send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
-    start_ack_timer();
-    inc(next_frame_to_send,4);
-
     while (true) {
+
+        if (SenderFrames[next_frame_to_send].info.data[0] == 0) {
+            break;
+        }
+
+        for (int k = 0; k < no_frames; k++) {
+            from_network_layer(SenderPackets[next_frame_to_send+k]);
+        }
+        nbuffered = nbuffered + 4;
+        send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
+        start_ack_timer();
+        inc(next_frame_to_send,4);
         wait_for_event();
 
         switch (event) {
@@ -210,17 +214,7 @@ void protocol5(const char *sentence, char result[MAX_PKT]) {
         else
             disable_network_layer();
 
-        if (SenderFrames[next_frame_to_send].info.data[0] == 0) {
-            break;
-        }
 
-        for (int k = 0; k < no_frames; k++) {
-            from_network_layer(SenderPackets[next_frame_to_send+k]);
-        }
-        nbuffered = nbuffered + 4;
-        send_data(next_frame_to_send, frame_expected, SenderPackets, receivedFrames, &event);
-        start_ack_timer();
-        inc(next_frame_to_send,4);
     }
     display_frames(receivedFrames);
     concatenate_frames(receivedFrames, MAX_PKT, result);
