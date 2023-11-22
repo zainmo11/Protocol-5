@@ -2,7 +2,7 @@
 
 
 
-## Tasks
+## <s>Tasks </s> project finished
 
 - <s>The sender sends four frames to receiver </s>
 - <s>while true </s>
@@ -17,11 +17,14 @@
 - <s>else break</s>
 
 
-## Last task
--Let the program send four frames at once, and if an error occurs, the sender re-sends frames starting from the one that had the error. 
+## <s> Last task</s>
+<s>- Let the program send four frames at once, and if an error occurs, the sender re-sends frames starting from the one that had the error. </s>
+
+
+ 
 ## Overview
 
-This implementation demonstrates Protocol 5, also known as Go-Back-N, for reliable communication over a network. The protocol allows for multiple outstanding frames, where the sender can transmit up to `MAX_SEQ` frames without waiting for an acknowledgment. Unlike previous protocols, Protocol 5 doesn't assume a constant stream of packets from the network layer but relies on a network layer ready event.
+This implementation demonstrates Protocol 5, also known as Go-Back-N, for reliable communication over a network. The protocol allows for multiple outstanding frames, where the sender can transmit up to `MAX_SEQ` frames without waiting for an acknowledgment. Unlike previous protocols, Protocol 5 doesn't assume a constant stream of packets from the network layer but relies on a network layer-ready event.
 
 ## Files and Structure
 
