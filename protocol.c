@@ -43,7 +43,7 @@ void disable_network_layer(void) {
  */
 
 void is_received(event_type e, frame frame_expected) {
-    e == frame_arrival ? printf("[RECEIVER]: Data %s Received\n", frame_expected.info.data) : printf("[RECEIVER]: Data %s not received\n", frame_expected.info.data);
+    e == frame_arrival ? printf("[RECEIVER]: Data %s Received\n", frame_expected.info.data) : printf("[RECEIVER]: Data %i not received\n", frame_expected.seq);
     usleep(sleep_time);
 }
 
