@@ -95,13 +95,26 @@ void concatenate_frames(const frame frames[], int num_frames, char result[MAX_PK
 }
 
 
-static void Receive_data(frame scratch, frame frames[], seq_nr frame_nr, event_type *e)
-{
-    /*to randomize the sequence of sending Frames */
-    event_type rand_x = (event_type)(rand() % 3);
-    *e = rand_x;
-    if (rand_x == frame_arrival) {
+static void Receive_data(frame scratch, frame frames[], int frame_nr, event_type *e) {
+    // Seed the random number generator with the current time
+    static int initialized = 0;
+    if (!initialized) {
+        srand((unsigned int)time(NULL));
+        initialized = 1;
+    }
+
+    // Generate a random number between 0 and 99
+    int randNum = rand() % 100;
+
+    // Set the event based on the random number
+    // 60% for frame_arrival
+    if (randNum < 60) {
+        *e = frame_arrival;
         frames[frame_nr] = scratch;
+    } else if (randNum < 85) {
+        *e = cksum_err;
+    } else {
+        *e = time_out;
     }
 }
 
